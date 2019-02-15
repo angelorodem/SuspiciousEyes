@@ -19,16 +19,16 @@ QMAKE_CXXFLAGS_RELEASE -= -O3
 #QMAKE_CXXFLAGS_RELEASE += -Os -s -fPIE -fvisibility-inlines-hidden -flto -fomit-frame-pointer -fstack-protector-all -D_FORTIFY_SOURCE=2 -fcf-protection=full -fstack-clash-protection -fvisibility=hidden -fsanitize=address -fsanitize=kernel-address -fsanitize-address-use-after-scope -fsanitize-coverage=trace-cmp -mmpx -fcheck-pointer-bounds -static -fstack-check -fstack-clash-protection -fsplit-stack -fvtable-verify=preinit -fstack-reuse=none -fno-exceptions -freg-struct-return -fno-jump-tables -mfpmath="387+sse" ## HARDENING
 #QMAKE_LFLAGS += -flto -Wl,-z,now -Wl,-z,relro #HARDEN
 
-QMAKE_CXXFLAGS_RELEASE += -Ofast -fwhole-program -fomit-frame-pointer -fmodulo-sched -fmodulo-sched-allow-regmoves -fgcse-sm -fgcse-las -fgcse-after-reload -funsafe-loop-optimizations -flive-range-shrinkage -fsched-spec-load-dangerous -fsched2-use-superblocks -floop-nest-optimize -floop-parallelize-all -ftree-parallelize-loops=8 -fprefetch-loop-arrays -ffinite-math-only -march=native -mtune=native -mfpmath="387+sse" -std=c++1z -static
+QMAKE_CXXFLAGS_RELEASE += -Ofast -fopenmp -fomit-frame-pointer -fmodulo-sched -fmodulo-sched-allow-regmoves -fgcse-sm -fgcse-las -fgcse-after-reload -funsafe-loop-optimizations -flive-range-shrinkage -fsched-spec-load-dangerous -fsched2-use-superblocks -floop-nest-optimize -floop-parallelize-all -ftree-parallelize-loops=8 -fprefetch-loop-arrays -ffinite-math-only -march=native -mtune=native -mfpmath="387+sse" -std=c++1z -static
 
 INCLUDEPATH += /usr/local/cuda/include
-INCLUDEPATH += /usr/local/include/opencv4
+INCLUDEPATH += /usr/local/include/opencv
 INCLUDEPATH += /usr/local/include
 
 
-LIBS += -L/usr/lib \
--lblas \
--llapack
+#LIBS += -L/usr/lib \
+#-lblas \
+#-llapack
 
 LIBS += -ldl -lrt
 
@@ -40,11 +40,11 @@ LIBS += -L/usr/lib -ltesseract
 
 LIBS += -L/usr/local/lib -ldlib
 
-LIBS += -L/usr/local/cuda/lib64/ -lcudnn -lcudart -lcublas -lcurand -lcusolver
+#LIBS += -L/usr/local/cuda/lib64/ -lcudnn -lcudart -lcublas -lcurand -lcusolver
 
 LIBS += -ldl -lrt
 
-LIBS += -L/usr/lib -lomp
+#LIBS += -L/usr/lib -lomp
 
 
 LIBS += -L/usr/local/lib \
@@ -62,11 +62,11 @@ LIBS += -L/usr/local/lib \
 -lopencv_flann \
 -lopencv_optflow \
 -lopencv_bgsegm \
--lopencv_cudaimgproc \
--lopencv_cudawarping \
--lopencv_cudafilters \
--lopencv_cudaarithm \
--lopencv_cudaobjdetect \
+#-lopencv_cudaimgproc \
+#-lopencv_cudawarping \
+#-lopencv_cudafilters \
+#-lopencv_cudaarithm \
+#-lopencv_cudaobjdetect \
 -lopencv_photo \
 -lopencv_xphoto \
 -lopencv_highgui
