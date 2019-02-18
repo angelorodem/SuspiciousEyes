@@ -22,13 +22,13 @@ QMAKE_CXXFLAGS_RELEASE -= -O3
 QMAKE_CXXFLAGS_RELEASE += -Ofast -fopenmp -fomit-frame-pointer -fmodulo-sched -fmodulo-sched-allow-regmoves -fgcse-sm -fgcse-las -fgcse-after-reload -funsafe-loop-optimizations -flive-range-shrinkage -fsched-spec-load-dangerous -fsched2-use-superblocks -floop-nest-optimize -floop-parallelize-all -ftree-parallelize-loops=8 -fprefetch-loop-arrays -ffinite-math-only -march=native -mtune=native -mfpmath="387+sse" -std=c++1z -static
 
 INCLUDEPATH += /usr/local/cuda/include
-INCLUDEPATH += /usr/local/include/opencv
+INCLUDEPATH += /usr/local/include/opencv4
 INCLUDEPATH += /usr/local/include
 
 
-#LIBS += -L/usr/lib \
-#-lblas \
-#-llapack
+LIBS += -L/usr/lib \
+-lblas \
+-llapack
 
 LIBS += -ldl -lrt
 
