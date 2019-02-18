@@ -4,6 +4,11 @@
 #include <QWidget>
 #include <QFileDialog>
 #include <QDebug>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QMessageBox>
+
+#include <vector>
 
 #include "opencv2/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -28,11 +33,15 @@ public:
     ~janela();
 
 private slots:
-    void on_pushButton_clicked();
+    void on_add_rule_clicked();
 
-    void on_pushButton_2_clicked();
+    void on_gogo_clicked();
 
 private:
+    std::vector<QRegularExpression> res;
+    QRegularExpressionMatch match;
+    QString massager;
+    bool check_dlp(QString &str);
     Ui::janela *ui;
 };
 

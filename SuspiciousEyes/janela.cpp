@@ -13,17 +13,20 @@ janela::~janela()
     delete ui;
 }
 
-void janela::on_pushButton_clicked()
+void janela::on_add_rule_clicked()
 {
-    QString str = QFileDialog::getOpenFileName(this,tr("Open Image"), "", tr("All (*.*)"));
-    qDebug() << str;
-    Mat input = imread(str.toStdString(),CV_32FC3);
+    QString rule = ui->rule_edit->text();
+    ui->rule_edit->clear();
+    QRegularExpression re;
+    re.setPattern(rule);
+    re.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
-    imshow("Janelao",input);
+    ui->rules_label->setText(ui->rules_label->text() + "RULE: [" +rule+ "]\n");
+    res.push_back(re);
 
 }
 
-void janela::on_pushButton_2_clicked()
+void janela::on_gogo_clicked()
 {
     char *old_ctype = strdup(setlocale(LC_ALL, NULL));
     setlocale(LC_ALL, "C");
@@ -78,8 +81,34 @@ void janela::on_pushButton_2_clicked()
 
     imshow("text",input);
 
+    check_dlp(wow);
+
     delete api;
 
     setlocale(LC_ALL, old_ctype);
     free(old_ctype);
+}
+
+bool janela::check_dlp(QString& str)
+{
+    QRegularExpressionMatch match;
+    QString message;
+    for (unsigned i = 0;i < res.size();++i) {
+        match = res[i].match(str);
+        if(match.hasMatch()){
+            message.append("The rule [" + res[i].pattern() + "] returned positive!\n");
+        }
+    }
+
+    if (!message.isEmpty()) {
+        QMessageBox msgBox;
+        msgBox.setText("Oh shit boiii");
+        msgBox.setInformativeText(message);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+    }
+
+    return true;
 }
