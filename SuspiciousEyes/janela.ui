@@ -64,14 +64,14 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="gogo_image">
           <property name="text">
            <string>Woww2</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="add_marker">
           <property name="text">
            <string>Add marker</string>
           </property>

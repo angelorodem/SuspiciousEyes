@@ -14,6 +14,9 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/opencv.hpp"
 
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
+
 #include "tesseract/baseapi.h"
 #include "tesseract/helpers.h"
 #include "tesseract/resultiterator.h"
@@ -38,6 +41,10 @@ private slots:
     void on_add_rule_clicked();
 
     void on_gogo_clicked();
+
+    void on_gogo_image_clicked();
+
+    void on_add_marker_clicked();
 
 private:
     std::vector<QRegularExpression> res;
