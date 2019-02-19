@@ -117,43 +117,60 @@ void janela::on_gogo_image_clicked()
 {
     QString filename = QFileDialog::getOpenFileName(this,tr("Open Image"), "", tr("All (*.png *.jpg *.bmp *.jpeg *.tiff *.ppm *.pgm *.pbm *.sr *.ras *.jpe *.jp2 *.tif *.dib *.webp)"));
     Mat input = imread(filename.toStdString());
-    cv:cvtColor(input,input,cv::COLOR_BGR2GRAY);
-
-    QString filename2 = QFileDialog::getOpenFileName(this,tr("Open Image"), "", tr("All (*.png *.jpg *.bmp *.jpeg *.tiff *.ppm *.pgm *.pbm *.sr *.ras *.jpe *.jp2 *.tif *.dib *.webp)"));
-    Mat input_2 = imread(filename2.toStdString());
-    cv::cvtColor(input_2,input_2,cv::COLOR_BGR2GRAY);
+    cv::cvtColor(input,input,cv::COLOR_BGR2GRAY);
 
     int minHessian = 400;
     cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create(minHessian);
-    std::vector<cv::KeyPoint> keypoints1, keypoints2;
-    cv::Mat descriptors1, descriptors2;
+    std::vector<cv::KeyPoint> keypoints1;
+    cv::Mat descriptors1;
 
     detector->detectAndCompute( input, noArray(), keypoints1, descriptors1 );
-    detector->detectAndCompute( input_2, noArray(), keypoints2, descriptors2 );
 
-    cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
-    std::vector< std::vector<cv::DMatch> > knn_matches;
-    matcher->knnMatch( descriptors1, descriptors2, knn_matches, 2 );
+    //feature matching
+    for (unsigned c_markers = 0;c_markers < markers.size();++c_markers) {
 
-    const float ratio_thresh = 0.45f;
-    std::vector<DMatch> good_matches;
-    for (size_t i = 0; i < knn_matches.size(); i++)
-    {
-        if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
+        cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
+        std::vector< std::vector<cv::DMatch> > knn_matches;
+        matcher->knnMatch( descriptors1, std::get<1>(markers[c_markers]), knn_matches, 2 );
+
+        const float ratio_thresh = 0.45f;
+        std::vector<DMatch> good_matches;
+        for (size_t i = 0; i < knn_matches.size(); i++)
         {
-            good_matches.push_back(knn_matches[i][0]);
+            if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
+            {
+                good_matches.push_back(knn_matches[i][0]);
+            }
         }
-    }
 
-    cv::Mat img_matches;
-    drawMatches( input, keypoints1, input_2, keypoints2, good_matches, img_matches, Scalar::all(-1),
-                 Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
-    //-- Show detected matches
-    imshow("Good Matches", img_matches );
+        cv::Mat img_matches;
+        drawMatches( input, keypoints1, std::get<2>(markers[c_markers]), std::get<0>(markers[c_markers]), good_matches, img_matches, Scalar::all(-1),
+                     Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+
+        cv::resize(img_matches,img_matches,cv::Size(),0.3,0.3);
+        if(good_matches.size() > 3){
+            qDebug() << "Possible match! feature matches: " << good_matches.size();
+        }
+        imshow("Feature similarity: " + std::to_string(c_markers), img_matches );
+    }
 
 }
 
 void janela::on_add_marker_clicked()
 {
+
+    QString filename2 = QFileDialog::getOpenFileName(this,tr("Open Image"), "", tr("All (*.png *.jpg *.bmp *.jpeg *.tiff *.ppm *.pgm *.pbm *.sr *.ras *.jpe *.jp2 *.tif *.dib *.webp)"));
+    Mat input_2 = imread(filename2.toStdString());
+    cv::cvtColor(input_2,input_2,cv::COLOR_BGR2GRAY);
+    ui->markers_label->setText(ui->markers_label->text() + filename2 +"\n");
+
+    int minHessian = 400;
+    cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create(minHessian);
+    std::vector<cv::KeyPoint> keypoints1;
+    cv::Mat descriptors1;
+
+    detector->detectAndCompute( input_2, noArray(), keypoints1, descriptors1 );
+
+    markers.push_back(std::make_tuple(keypoints1,descriptors1,input_2));
 
 }

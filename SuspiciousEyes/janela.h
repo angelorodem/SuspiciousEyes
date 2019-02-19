@@ -7,8 +7,10 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QMessageBox>
+#include <QString>
 
 #include <vector>
+#include <tuple>
 
 #include "opencv2/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -48,6 +50,7 @@ private slots:
 
 private:
     std::vector<QRegularExpression> res;
+    std::vector<std::tuple<std::vector<cv::KeyPoint>,cv::Mat,cv::Mat>> markers;
     QRegularExpressionMatch match;
     QString massager;
     bool check_dlp(QString &str);

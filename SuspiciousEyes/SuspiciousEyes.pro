@@ -40,7 +40,8 @@ LIBS += -L/usr/lib -ltesseract
 
 LIBS += -L/usr/local/lib -ldlib
 
-LIBS += -L/usr/local/cuda/lib64/ -lcudnn -lcudart -lcublas -lcurand -lcusolver
+#if no cuda comment
+#LIBS += -L/usr/local/cuda/lib64/ -lcudnn -lcudart -lcublas -lcurand -lcusolver
 
 LIBS += -ldl -lrt
 
@@ -62,11 +63,8 @@ LIBS += -L/usr/local/lib \
 -lopencv_flann \
 -lopencv_optflow \
 -lopencv_bgsegm \
--lopencv_cudaimgproc \
--lopencv_cudawarping \
--lopencv_cudafilters \
--lopencv_cudaarithm \
--lopencv_cudaobjdetect \
+#ifno cuda comment
+#-lopencv_cudaimgproc -lopencv_cudawarping -lopencv_cudafilters -lopencv_cudaarithm -lopencv_cudaobjdetect \
 -lopencv_xfeatures2d \
 -lopencv_photo \
 -lopencv_xphoto \
