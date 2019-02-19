@@ -42,11 +42,13 @@ public:
 private slots:
     void on_add_rule_clicked();
 
-    void on_gogo_clicked();
-
-    void on_gogo_image_clicked();
-
     void on_add_marker_clicked();
+
+    void on_template_match_clicked();
+
+    void on_text_match_clicked();
+
+    void on_feature_match_clicked();
 
 private:
     std::vector<QRegularExpression> res;

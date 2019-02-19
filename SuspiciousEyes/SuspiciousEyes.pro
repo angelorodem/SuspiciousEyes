@@ -45,7 +45,7 @@ LIBS += -L/usr/local/lib -ldlib
 
 LIBS += -ldl -lrt
 
-#LIBS += -L/usr/lib -lomp
+LIBS += -L/usr/lib -lomp
 
 
 LIBS += -L/usr/local/lib \

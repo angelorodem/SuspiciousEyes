@@ -26,8 +26,106 @@ void janela::on_add_rule_clicked()
 
 }
 
-void janela::on_gogo_clicked()
+
+bool janela::check_dlp(QString& str)
 {
+    QRegularExpressionMatch match;
+    QString message;
+    for (unsigned i = 0;i < res.size();++i) {
+        match = res[i].match(str);
+        if(match.hasMatch()){
+            message.append("The rule [" + res[i].pattern() + "] returned positive!\n");
+        }
+    }
+
+    if (!message.isEmpty()) {
+        QMessageBox msgBox;
+        msgBox.setText("Oh shit boiii");
+        msgBox.setInformativeText(message);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+    }
+
+    return true;
+}
+
+
+
+void janela::on_add_marker_clicked()
+{
+    //Add a marker (image to be found in other images)
+
+    QString filename2 = QFileDialog::getOpenFileName(this,tr("Open Image"), "", tr("All (*.png *.jpg *.bmp *.jpeg *.tiff *.ppm *.pgm *.pbm *.sr *.ras *.jpe *.jp2 *.tif *.dib *.webp)"));
+    if(filename2.isEmpty())return;
+
+    Mat input_2 = imread(filename2.toStdString());
+    cv::cvtColor(input_2,input_2,cv::COLOR_BGR2GRAY);
+    ui->markers_label->setText(ui->markers_label->text() + filename2 +"\n");
+
+    //Find the feature points in the image and store them in an vector of touples
+    int minHessian = 400;
+    cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create(minHessian);
+    std::vector<cv::KeyPoint> keypoints1;
+    cv::Mat descriptors1;
+
+    detector->detectAndCompute( input_2, noArray(), keypoints1, descriptors1 );
+
+    markers.push_back(std::make_tuple(keypoints1,descriptors1,input_2));
+
+}
+
+void janela::on_template_match_clicked()
+{
+    //Template gives high precision, but it can't detect distorted or heavly rotated images.
+
+    //Load image
+    QString filename = QFileDialog::getOpenFileName(this,tr("Open Image"), "", tr("All (*.png *.jpg *.bmp *.jpeg *.tiff *.ppm *.pgm *.pbm *.sr *.ras *.jpe *.jp2 *.tif *.dib *.webp)"));
+    if(filename.isEmpty())return;
+
+    Mat input = imread(filename.toStdString());
+
+    //Save colored image for result display
+    cv::Mat img_display;
+    input.copyTo(img_display);
+    cv::cvtColor(input,input,cv::COLOR_BGR2GRAY);
+
+    cv::Mat result;
+
+    //iterate all templates to scan for matches
+    for (uint32_t c_markers = 0;c_markers < markers.size();++c_markers) {
+        int result_cols =  input.cols - std::get<2>(markers[c_markers]).cols + 1;
+        int result_rows = input.rows - std::get<2>(markers[c_markers]).rows + 1;
+        result.create( result_rows, result_cols, CV_8UC1 );
+        matchTemplate( input, std::get<2>(markers[c_markers]), result, 1);
+
+        //normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
+        double minVal; double maxVal; Point minLoc(0,0); Point maxLoc(0,0);
+        minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+
+        qDebug() << "min: " << minVal<< " max: " << maxVal;
+
+        if(minVal < 0.2){
+
+            rectangle( img_display, minLoc, Point( minLoc.x + std::get<2>(markers[c_markers]).cols , minLoc.y + std::get<2>(markers[c_markers]).rows ), cv::Scalar(0,0,255), 5, 8, 0 );
+            rectangle( result, minLoc, Point( minLoc.x + std::get<2>(markers[c_markers]).cols , minLoc.y + std::get<2>(markers[c_markers]).rows ), Scalar(0,0,255), 5, 8, 0 );
+
+            if(!img_display.empty()){
+                cv::resize(img_display,img_display,cv::Size(),0.25,0.25,cv::INTER_CUBIC);
+                imshow( "image_window: " + std::to_string(c_markers), img_display );
+            }
+        }
+
+    }
+
+
+
+}
+
+void janela::on_text_match_clicked()
+{
+
     char *old_ctype = strdup(setlocale(LC_ALL, NULL));
     setlocale(LC_ALL, "C");
     tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
@@ -89,33 +187,13 @@ void janela::on_gogo_clicked()
     free(old_ctype);
 }
 
-bool janela::check_dlp(QString& str)
+void janela::on_feature_match_clicked()
 {
-    QRegularExpressionMatch match;
-    QString message;
-    for (unsigned i = 0;i < res.size();++i) {
-        match = res[i].match(str);
-        if(match.hasMatch()){
-            message.append("The rule [" + res[i].pattern() + "] returned positive!\n");
-        }
-    }
+    //Feature match can find matches in distorted and noisy images, but it can give a high
+    //quantity of false positives, even more for low res and low detailed templates
 
-    if (!message.isEmpty()) {
-        QMessageBox msgBox;
-        msgBox.setText("Oh shit boiii");
-        msgBox.setInformativeText(message);
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
-    }
-
-    return true;
-}
-
-void janela::on_gogo_image_clicked()
-{
     QString filename = QFileDialog::getOpenFileName(this,tr("Open Image"), "", tr("All (*.png *.jpg *.bmp *.jpeg *.tiff *.ppm *.pgm *.pbm *.sr *.ras *.jpe *.jp2 *.tif *.dib *.webp)"));
+    if(filename.isEmpty())return;
     Mat input = imread(filename.toStdString());
     cv::cvtColor(input,input,cv::COLOR_BGR2GRAY);
 
@@ -133,7 +211,7 @@ void janela::on_gogo_image_clicked()
         std::vector< std::vector<cv::DMatch> > knn_matches;
         matcher->knnMatch( descriptors1, std::get<1>(markers[c_markers]), knn_matches, 2 );
 
-        const float ratio_thresh = 0.45f;
+        const float ratio_thresh = 0.44f;
         std::vector<DMatch> good_matches;
         for (size_t i = 0; i < knn_matches.size(); i++)
         {
@@ -147,30 +225,11 @@ void janela::on_gogo_image_clicked()
         drawMatches( input, keypoints1, std::get<2>(markers[c_markers]), std::get<0>(markers[c_markers]), good_matches, img_matches, Scalar::all(-1),
                      Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 
-        cv::resize(img_matches,img_matches,cv::Size(),0.3,0.3);
-        if(good_matches.size() > 3){
+
+        if(good_matches.size() > 4){
+            cv::resize(img_matches,img_matches,cv::Size(),0.3,0.3);
             qDebug() << "Possible match! feature matches: " << good_matches.size();
+            imshow("Feature similarity: " + std::to_string(c_markers), img_matches );
         }
-        imshow("Feature similarity: " + std::to_string(c_markers), img_matches );
     }
-
-}
-
-void janela::on_add_marker_clicked()
-{
-
-    QString filename2 = QFileDialog::getOpenFileName(this,tr("Open Image"), "", tr("All (*.png *.jpg *.bmp *.jpeg *.tiff *.ppm *.pgm *.pbm *.sr *.ras *.jpe *.jp2 *.tif *.dib *.webp)"));
-    Mat input_2 = imread(filename2.toStdString());
-    cv::cvtColor(input_2,input_2,cv::COLOR_BGR2GRAY);
-    ui->markers_label->setText(ui->markers_label->text() + filename2 +"\n");
-
-    int minHessian = 400;
-    cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create(minHessian);
-    std::vector<cv::KeyPoint> keypoints1;
-    cv::Mat descriptors1;
-
-    detector->detectAndCompute( input_2, noArray(), keypoints1, descriptors1 );
-
-    markers.push_back(std::make_tuple(keypoints1,descriptors1,input_2));
-
 }
