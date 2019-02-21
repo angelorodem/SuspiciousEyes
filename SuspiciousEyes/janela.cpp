@@ -211,7 +211,7 @@ void janela::on_feature_match_clicked()
         std::vector< std::vector<cv::DMatch> > knn_matches;
         matcher->knnMatch( descriptors1, std::get<1>(markers[c_markers]), knn_matches, 2 );
 
-        const float ratio_thresh = 0.50f;
+        const float ratio_thresh = 0.45f;
         std::vector<DMatch> good_matches;
         for (size_t i = 0; i < knn_matches.size(); i++)
         {
@@ -225,18 +225,29 @@ void janela::on_feature_match_clicked()
         cv::Mat img_matches;
         drawMatches( input, keypoints1, std::get<2>(markers[c_markers]), std::get<0>(markers[c_markers]), good_matches, img_matches, Scalar::all(-1),
                      Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
-        qDebug() << "Possible match! feature matches: " << good_matches.size();
+
         if(good_matches.size() > 3){
+            //qDebug() << "Possible match! feature matches: " << good_matches.size();
             std::vector<Point2f> obj;
             std::vector<Point2f> scene;
             for( size_t i = 0; i < good_matches.size(); i++ )
             {
-                //-- Get the keypoints from the good matches std::get<2>(markers[c_markers])
                 obj.push_back( std::get<0>(markers[c_markers])[ good_matches[i].trainIdx ].pt );
                 scene.push_back( keypoints1[ good_matches[i].queryIdx ].pt );
             }
 
-            Mat H = findHomography( obj, scene, RANSAC );
+            Mat inliers;
+            Mat H = findHomography( obj, scene, RANSAC,3,inliers);
+            /*
+ for (int i=0; i<inliers.rows; ++i)
+            {
+                if (inliers.at<uchar>(i,0) != 0)
+                {
+                    // good_matches[i] is an inlier
+                }
+            }*/
+
+
             //-- Get the corners from the image_1 ( the object to be "detected" )
             std::vector<Point2f> obj_corners(4);
             obj_corners[0] = Point2f(0, 0);
@@ -256,7 +267,7 @@ void janela::on_feature_match_clicked()
                     scene_corners[0], Scalar( 0, 255, 0), 4 );
             //-- Show detected matches
             cv::resize(img_matches,img_matches,cv::Size(),0.2,0.2);
-            imshow("Good Matches & Object detection", img_matches );
+            imshow("Good Matches & Object detection: " + std::to_string(c_markers), img_matches );
 
 
         }
