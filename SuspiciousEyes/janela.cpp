@@ -65,7 +65,6 @@ void janela::on_add_marker_clicked()
     ui->markers_label->setText(ui->markers_label->text() + filename2 +"\n");
 
     //Find the feature points in the image and store them in an vector of touples
-    int minHessian = 400;
     cv::Ptr<cv::xfeatures2d::SIFT> detector = cv::xfeatures2d::SIFT::create();
     std::vector<cv::KeyPoint> keypoints1;
     cv::Mat descriptors1;
@@ -197,7 +196,6 @@ void janela::on_feature_match_clicked()
     Mat input = imread(filename.toStdString());
     cv::cvtColor(input,input,cv::COLOR_BGR2GRAY);
 
-    int minHessian = 400; //usado no SURF
     cv::Ptr<cv::xfeatures2d::SIFT> detector = cv::xfeatures2d::SIFT::create();
     std::vector<cv::KeyPoint> keypoints1;
     cv::Mat descriptors1;
@@ -223,53 +221,63 @@ void janela::on_feature_match_clicked()
 
 
         cv::Mat img_matches;
-        drawMatches( input, keypoints1, std::get<2>(markers[c_markers]), std::get<0>(markers[c_markers]), good_matches, img_matches, Scalar::all(-1),
-                     Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 
-        if(good_matches.size() > 3){
-            //qDebug() << "Possible match! feature matches: " << good_matches.size();
-            std::vector<Point2f> obj;
-            std::vector<Point2f> scene;
-            for( size_t i = 0; i < good_matches.size(); i++ )
-            {
-                obj.push_back( std::get<0>(markers[c_markers])[ good_matches[i].trainIdx ].pt );
-                scene.push_back( keypoints1[ good_matches[i].queryIdx ].pt );
-            }
-
-            Mat inliers;
-            Mat H = findHomography( obj, scene, RANSAC,3,inliers);
-            /*
- for (int i=0; i<inliers.rows; ++i)
-            {
-                if (inliers.at<uchar>(i,0) != 0)
+        std::vector<DMatch> next_good_matches;
+        unsigned count = 0;
+        while (true) {
+            if(good_matches.size() > 8){
+                //qDebug() << "Possible match! feature matches: " << good_matches.size();
+                std::vector<Point2f> obj;
+                std::vector<Point2f> scene;
+                for( size_t i = 0; i < good_matches.size(); i++ )
                 {
-                    // good_matches[i] is an inlier
+                    obj.push_back( std::get<0>(markers[c_markers])[ good_matches[i].trainIdx ].pt );
+                    scene.push_back( keypoints1[ good_matches[i].queryIdx ].pt );
                 }
-            }*/
+
+                Mat inliers;
+                Mat H = findHomography( obj, scene, RANSAC,3,inliers);
+                std::vector<DMatch> this_good_matches;
+                for (int i=0; i<inliers.rows; ++i)
+                {
+                    if (inliers.at<uchar>(i,0) != 0)
+                    {
+                        this_good_matches.push_back(good_matches[i]);
+                    }else{
+                        next_good_matches.push_back(good_matches[i]);
+                    }
+                }
+
+                drawMatches( input, keypoints1, std::get<2>(markers[c_markers]), std::get<0>(markers[c_markers]), this_good_matches, img_matches, Scalar::all(-1),
+                             Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 
 
-            //-- Get the corners from the image_1 ( the object to be "detected" )
-            std::vector<Point2f> obj_corners(4);
-            obj_corners[0] = Point2f(0, 0);
-            obj_corners[1] = Point2f( (float)std::get<2>(markers[c_markers]).cols, 0 );
-            obj_corners[2] = Point2f( (float)std::get<2>(markers[c_markers]).cols, (float)std::get<2>(markers[c_markers]).rows );
-            obj_corners[3] = Point2f( 0, (float)std::get<2>(markers[c_markers]).rows );
-            std::vector<Point2f> scene_corners(4);
-            perspectiveTransform( obj_corners, scene_corners, H);
-            //-- Draw lines between the corners (the mapped object in the scene - image_2 )
-            line( img_matches, scene_corners[0],
-                    scene_corners[1], Scalar(0, 255, 0), 4 );
-            line( img_matches, scene_corners[1] ,
-                    scene_corners[2], Scalar( 0, 255, 0), 4 );
-            line( img_matches, scene_corners[2],
-                    scene_corners[3], Scalar( 0, 255, 0), 4 );
-            line( img_matches, scene_corners[3],
-                    scene_corners[0], Scalar( 0, 255, 0), 4 );
-            //-- Show detected matches
-            cv::resize(img_matches,img_matches,cv::Size(),0.2,0.2);
-            imshow("Good Matches & Object detection: " + std::to_string(c_markers), img_matches );
-
-
+                //-- Get the corners from the image_1 ( the object to be "detected" )
+                std::vector<Point2f> obj_corners(4);
+                obj_corners[0] = Point2f(0, 0);
+                obj_corners[1] = Point2f( (float)std::get<2>(markers[c_markers]).cols, 0 );
+                obj_corners[2] = Point2f( (float)std::get<2>(markers[c_markers]).cols, (float)std::get<2>(markers[c_markers]).rows );
+                obj_corners[3] = Point2f( 0, (float)std::get<2>(markers[c_markers]).rows );
+                std::vector<Point2f> scene_corners(4);
+                perspectiveTransform( obj_corners, scene_corners, H);
+                //-- Draw lines between the corners (the mapped object in the scene - image_2 )
+                line( img_matches, scene_corners[0],
+                        scene_corners[1], Scalar(0, 255, 0), 4 );
+                line( img_matches, scene_corners[1] ,
+                        scene_corners[2], Scalar( 0, 255, 0), 4 );
+                line( img_matches, scene_corners[2],
+                        scene_corners[3], Scalar( 0, 255, 0), 4 );
+                line( img_matches, scene_corners[3],
+                        scene_corners[0], Scalar( 0, 255, 0), 4 );
+                //-- Show detected matches
+                cv::resize(img_matches,img_matches,cv::Size(),0.2,0.2);
+                imshow("Good Matches & Object detection: " + std::to_string(c_markers+count), img_matches );
+                good_matches.swap(next_good_matches);
+                next_good_matches.clear();
+                ++count;
+            }else{
+                break;
+            }
         }
     }
 }
