@@ -61,7 +61,11 @@ void janela::on_add_marker_clicked()
     if(filename2.isEmpty())return;
 
     Mat input_2 = imread(filename2.toStdString());
-    cv::cvtColor(input_2,input_2,cv::COLOR_BGR2GRAY);
+    cv::cvtColor(input_2,input_2,cv::COLOR_BGR2YCrCb);
+
+    std::array<cv::Mat,3> channels;
+    cv::split(input_2,channels);
+
     ui->markers_label->setText(ui->markers_label->text() + filename2 +"\n");
 
     //Find the feature points in the image and store them in an vector of touples
@@ -69,9 +73,9 @@ void janela::on_add_marker_clicked()
     std::vector<cv::KeyPoint> keypoints1;
     cv::Mat descriptors1;
 
-    detector->detectAndCompute( input_2, noArray(), keypoints1, descriptors1 );
+    detector->detectAndCompute( channels[0], noArray(), keypoints1, descriptors1 );
 
-    markers.push_back(std::make_tuple(keypoints1,descriptors1,input_2));
+    markers.push_back(std::make_tuple(keypoints1,descriptors1,channels[0]));
 
 }
 
@@ -88,16 +92,19 @@ void janela::on_template_match_clicked()
     //Save colored image for result display
     cv::Mat img_display;
     input.copyTo(img_display);
-    cv::cvtColor(input,input,cv::COLOR_BGR2GRAY);
+    cv::cvtColor(input,input,cv::COLOR_BGR2YCrCb);
+
+    std::array<cv::Mat,3> channels;
+    cv::split(input,channels);
 
     cv::Mat result;
 
     //iterate all templates to scan for matches
     for (uint32_t c_markers = 0;c_markers < markers.size();++c_markers) {
-        int result_cols =  input.cols - std::get<2>(markers[c_markers]).cols + 1;
-        int result_rows = input.rows - std::get<2>(markers[c_markers]).rows + 1;
+        int result_cols =  channels[0].cols - std::get<2>(markers[c_markers]).cols + 1;
+        int result_rows = channels[0].rows - std::get<2>(markers[c_markers]).rows + 1;
         result.create( result_rows, result_cols, CV_8UC1 );
-        matchTemplate( input, std::get<2>(markers[c_markers]), result, 1);
+        matchTemplate( channels[0], std::get<2>(markers[c_markers]), result, 1);
 
         //normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
         double minVal; double maxVal; Point minLoc(0,0); Point maxLoc(0,0);
@@ -194,13 +201,16 @@ void janela::on_feature_match_clicked()
     QString filename = QFileDialog::getOpenFileName(this,tr("Open Image"), "", tr("All (*.png *.jpg *.bmp *.jpeg *.tiff *.ppm *.pgm *.pbm *.sr *.ras *.jpe *.jp2 *.tif *.dib *.webp)"));
     if(filename.isEmpty())return;
     Mat input = imread(filename.toStdString());
-    cv::cvtColor(input,input,cv::COLOR_BGR2GRAY);
+    cv::cvtColor(input,input,cv::COLOR_BGR2YCrCb);
+
+    std::array<cv::Mat,3> channels;
+    cv::split(input,channels);
 
     cv::Ptr<cv::xfeatures2d::SIFT> detector = cv::xfeatures2d::SIFT::create();
     std::vector<cv::KeyPoint> keypoints1;
     cv::Mat descriptors1;
 
-    detector->detectAndCompute( input, noArray(), keypoints1, descriptors1 );
+    detector->detectAndCompute( channels[0], noArray(), keypoints1, descriptors1 );
 
     //feature matching
     for (unsigned c_markers = 0;c_markers < markers.size();++c_markers) {
@@ -209,7 +219,7 @@ void janela::on_feature_match_clicked()
         std::vector< std::vector<cv::DMatch> > knn_matches;
         matcher->knnMatch( descriptors1, std::get<1>(markers[c_markers]), knn_matches, 2 );
 
-        const float ratio_thresh = 0.45f;
+        const float ratio_thresh = 0.7f;
         std::vector<DMatch> good_matches;
         for (size_t i = 0; i < knn_matches.size(); i++)
         {
@@ -219,11 +229,13 @@ void janela::on_feature_match_clicked()
             }
         }
 
-
+        const unsigned thresh = ui->thresh_slider->value();
         cv::Mat img_matches;
 
         std::vector<DMatch> next_good_matches;
         unsigned count = 0;
+        qDebug() << "Possible match! feature matches: " << good_matches.size();
+        int32_t best_match_values = 0;
         while (true) {
             if(good_matches.size() > 8){
                 //qDebug() << "Possible match! feature matches: " << good_matches.size();
@@ -236,7 +248,7 @@ void janela::on_feature_match_clicked()
                 }
 
                 Mat inliers;
-                Mat H = findHomography( obj, scene, RANSAC,3,inliers);
+                Mat H = findHomography( obj, scene, RANSAC,3,inliers,2000,0.995);
                 std::vector<DMatch> this_good_matches;
                 for (int i=0; i<inliers.rows; ++i)
                 {
@@ -247,18 +259,26 @@ void janela::on_feature_match_clicked()
                         next_good_matches.push_back(good_matches[i]);
                     }
                 }
+                std::vector<Point2f> obj_corners(4);
+                std::vector<Point2f> scene_corners(4);
+                if (this_good_matches.size() < thresh) {
 
-                drawMatches( input, keypoints1, std::get<2>(markers[c_markers]), std::get<0>(markers[c_markers]), this_good_matches, img_matches, Scalar::all(-1),
-                             Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+                    qDebug() << "No good: " << this_good_matches.size();
+                    goto end;
+                }
+                best_match_values = this_good_matches.size();
+
+                drawMatches( channels[0], keypoints1, std::get<2>(markers[c_markers]), std::get<0>(markers[c_markers]), this_good_matches, img_matches, Scalar::all(-1),
+                        Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 
 
                 //-- Get the corners from the image_1 ( the object to be "detected" )
-                std::vector<Point2f> obj_corners(4);
+
                 obj_corners[0] = Point2f(0, 0);
                 obj_corners[1] = Point2f( (float)std::get<2>(markers[c_markers]).cols, 0 );
                 obj_corners[2] = Point2f( (float)std::get<2>(markers[c_markers]).cols, (float)std::get<2>(markers[c_markers]).rows );
                 obj_corners[3] = Point2f( 0, (float)std::get<2>(markers[c_markers]).rows );
-                std::vector<Point2f> scene_corners(4);
+
                 perspectiveTransform( obj_corners, scene_corners, H);
                 //-- Draw lines between the corners (the mapped object in the scene - image_2 )
                 line( img_matches, scene_corners[0],
@@ -272,12 +292,14 @@ void janela::on_feature_match_clicked()
                 //-- Show detected matches
                 cv::resize(img_matches,img_matches,cv::Size(),0.2,0.2);
                 imshow("Good Matches & Object detection: " + std::to_string(c_markers+count), img_matches );
+                ++count;
                 good_matches.swap(next_good_matches);
                 next_good_matches.clear();
-                ++count;
             }else{
+end:
                 break;
             }
+
         }
     }
 }
