@@ -282,13 +282,13 @@ void janela::on_feature_match_clicked()
                 perspectiveTransform( obj_corners, scene_corners, H);
                 //-- Draw lines between the corners (the mapped object in the scene - image_2 )
                 line( img_matches, scene_corners[0],
-                        scene_corners[1], Scalar(0, 255, 0), 4 );
+                        scene_corners[1], Scalar(0, 0, 255), 4 );
                 line( img_matches, scene_corners[1] ,
-                        scene_corners[2], Scalar( 0, 255, 0), 4 );
+                        scene_corners[2], Scalar( 0, 0, 255), 4 );
                 line( img_matches, scene_corners[2],
-                        scene_corners[3], Scalar( 0, 255, 0), 4 );
+                        scene_corners[3], Scalar( 0, 0, 255), 4 );
                 line( img_matches, scene_corners[3],
-                        scene_corners[0], Scalar( 0, 255, 0), 4 );
+                        scene_corners[0], Scalar( 0, 0, 255), 4 );
                 //-- Show detected matches
                 cv::resize(img_matches,img_matches,cv::Size(),0.2,0.2);
                 imshow("Good Matches & Object detection: " + std::to_string(c_markers+count), img_matches );
