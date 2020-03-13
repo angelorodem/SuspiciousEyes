@@ -44,8 +44,6 @@ private slots:
 
     void on_add_marker_clicked();
 
-    void on_template_match_clicked();
-
     void on_text_match_clicked();
 
     void on_feature_match_clicked();
@@ -55,7 +53,9 @@ private:
     std::vector<std::tuple<std::vector<cv::KeyPoint>,cv::Mat,cv::Mat>> markers;
     QRegularExpressionMatch match;
     QString massager;
-    bool check_dlp(QString &str);
+    bool check_text_dlp(QString &str);
+    void warning(QString &str);
+    bool debug = true;
     Ui::janela *ui;
 };
 
