@@ -57,14 +57,6 @@ void janela::warning(QString &str)
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
-    }else{
-        QMessageBox msgBox;
-        msgBox.setText("Oops");
-        msgBox.setInformativeText("Got a match!");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
     }
 }
 
@@ -115,6 +107,7 @@ void janela::on_text_match_clicked()
         exit(1);
     }
 
+    int count = 0;
     foreach (QString str, files) {
         Mat input = imread(str.toStdString());
 
@@ -166,7 +159,7 @@ void janela::on_text_match_clicked()
                 cv::resize(input,input,cv::Size(),0.2,0.2);
             }
 
-                imshow("Result" + std::to_string(i),input);
+                imshow("Result" + std::to_string(++count),input);
         }
 
 
@@ -195,6 +188,7 @@ void janela::on_feature_match_clicked()
     std::vector<cv::KeyPoint> keypoints;
     cv::Mat descriptors;
     unsigned count = 0;
+     QString s;
     foreach (QString filename, filenames) {
         qDebug() << filename ;
         Mat input = imread(filename.toStdString());
@@ -282,6 +276,8 @@ void janela::on_feature_match_clicked()
                         imshow("Good Matches & Object detection: " + std::to_string(c_markers) + ":" + std::to_string(count), img_matches );
                         ++count;
                     }
+                    s += QString("Got match for: " + filename + "\n");
+
 
                     good_matches.swap(next_good_matches);
                     next_good_matches.clear();
@@ -293,5 +289,6 @@ void janela::on_feature_match_clicked()
             }
         }
     }
+    warning(s);
 
 }
