@@ -42,8 +42,6 @@ bool janela::check_text_dlp(QString& str)
     }
 
     warning(message);
-
-
     return true;
 }
 
@@ -69,14 +67,15 @@ void janela::on_add_marker_clicked()
     QStringList filenames = QFileDialog::getOpenFileNames(this,tr("Open Image"), "", tr("All (*.png *.jpg *.bmp *.jpeg *.tiff *.ppm *.pgm *.pbm *.sr *.ras *.jpe *.jp2 *.tif *.dib *.webp)"));
     if(filenames.isEmpty())return;
 
-    foreach (QString file, filenames) {
-        Mat input_2 = imread(file.toStdString());
+    for (auto file = filenames.begin(); file < filenames.end(); file++) {
+        qDebug() << *file;
+        Mat input_2 = imread(file->toStdString());
         cv::cvtColor(input_2,input_2,cv::COLOR_BGR2YCrCb);
 
         std::array<cv::Mat,3> channels;
         cv::split(input_2,channels);
 
-        ui->markers_label->setText(ui->markers_label->text() + file +"\n");
+        ui->markers_label->setText(ui->markers_label->text() + *file +"\n");
 
         //Find the feature points in the image and store them in an vector of touples
         cv::Ptr<cv::xfeatures2d::SIFT> detector = cv::xfeatures2d::SIFT::create();
@@ -156,13 +155,13 @@ void janela::on_text_match_clicked()
         }
         if(debug){
             if(input.cols > 1000 || input.rows > 800){
-                cv::resize(input,input,cv::Size(),0.2,0.2);
+                cv::resize(input,input,cv::Size(),0.5,0.5);
             }
 
                 imshow("Result" + std::to_string(++count),input);
         }
 
-
+        qDebug() << "Assembled text: " << text_assembly;
         check_text_dlp(text_assembly);
     }
 

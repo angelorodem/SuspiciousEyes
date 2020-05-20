@@ -7,7 +7,7 @@ SOURCES += \
         main.cpp \
     janela.cpp
 
-QMAKE_CXXFLAGS_DEBUG += -g -Og -dA -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels -Wformat-extra-args -Wformat-nonliteral -Wformat-security -Wformat-y2k -Wimport -Winit-self -Winline -Winvalid-pch -Wlogical-op -Wmissing-declarations -Wno-missing-format-attribute -Wmissing-include-dirs -Wmultichar -Wpacked -Wpointer-arith -Wreturn-type -Wsequence-point -Wsign-compare -Wstrict-aliasing -Wstrict-aliasing=2 -Wswitch -Wswitch-default -Werror=undef -Wno-unused -Wvariadic-macros -Wwrite-strings  -Werror=declaration-after-statement -Werror=implicit-function-declaration -Werror=nested-externs -Werror=strict-prototypes -fno-strict-aliasing -static #-Werror=missing-braces
+QMAKE_CXXFLAGS_DEBUG += -g -dA -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels -Wformat-extra-args -Wformat-nonliteral -Wformat-security -Wformat-y2k -Wimport -Winit-self -Winline -Winvalid-pch -Wlogical-op -Wmissing-declarations -Wno-missing-format-attribute -Wmissing-include-dirs -Wmultichar -Wpacked -Wpointer-arith -Wreturn-type -Wsequence-point -Wsign-compare -Wstrict-aliasing -Wstrict-aliasing=2 -Wswitch -Wswitch-default -Werror=undef -Wno-unused -Wvariadic-macros -Wwrite-strings  -Werror=declaration-after-statement -Werror=implicit-function-declaration -Werror=nested-externs -Werror=strict-prototypes -fno-strict-aliasing #-Werror=missing-braces
 
 QMAKE_CXXFLAGS_RELEASE -= -O1
 QMAKE_CXXFLAGS_RELEASE -= -O2

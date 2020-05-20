@@ -11,17 +11,17 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>DLP Example</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,1">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>DLP Text</string>
+      <string>DLP Text (Perl RE Compliant)</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,10">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="12,3,1">
         <item>
          <widget class="QPushButton" name="text_match">
           <property name="text">
@@ -33,6 +33,22 @@
          <widget class="QPushButton" name="add_rule">
           <property name="text">
            <string>Add rule</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string> &lt;a href=&quot;https://perldoc.perl.org/perlre.html#Regular-Expressions/&quot;&gt;?&lt;/a&gt;</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="openExternalLinks">
+           <bool>true</bool>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
           </property>
          </widget>
         </item>
