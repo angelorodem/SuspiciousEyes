@@ -5,6 +5,7 @@ This project is a very simple demonstration of image DLP System, it works for te
 ## Text in images
 The first feature uses [Tesseract](https://github.com/tesseract-ocr/tesseract) [OCR](https://en.wikipedia.org/wiki/Optical_character_recognition) to locate words in the image, with a simple algorithm we construct sentences with the found words and apply Perl compliant Regular expressions to search for matches with the DLP rules.
 
+### Example 1
 ![Text recognition](https://github.com/angelorodem/SuspiciousEyes/blob/master/images/results/result1/result1.png)
 
 > Assembled text: " AM Android is the world's most popular
@@ -19,7 +20,7 @@ The first feature uses [Tesseract](https://github.com/tesseract-ocr/tesseract) [
 ![DLP Rule](https://github.com/angelorodem/SuspiciousEyes/blob/master/images/results/result1/result1_rule.png)
 ![Detected rule](https://github.com/angelorodem/SuspiciousEyes/blob/master/images/results/result1/result1_warning.png)
 
----
+### Example 2
 ![Text image](https://github.com/angelorodem/SuspiciousEyes/blob/master/images/results/result2/Result1_screenshot_19.05.2020.png)
 
 > Assembled text: " A . Teste <Hey, im leaking this secret info
