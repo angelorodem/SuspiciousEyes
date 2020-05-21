@@ -28,7 +28,7 @@ The first feature uses [Tesseract](https://github.com/tesseract-ocr/tesseract) [
 
 ![Rule](https://github.com/angelorodem/SuspiciousEyes/blob/master/images/results/result2/Screenshot%20from%202020-05-19%2023-41-31.png)
 ![Detection](https://github.com/angelorodem/SuspiciousEyes/blob/master/images/results/result2/Screenshot%20from%202020-05-19%2023-40-38.png)
-
+Note: there is a limitation with dark on dark text
 ## Images in images
 This feature allows to search an image inside other images, this can be used to find marked documents. 
 
