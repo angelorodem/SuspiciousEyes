@@ -31,8 +31,8 @@ The first feature uses [Tesseract](https://github.com/tesseract-ocr/tesseract) [
 ![Detection](https://github.com/angelorodem/SuspiciousEyes/blob/master/images/results/result2/Screenshot%20from%202020-05-19%2023-40-38.png)       
 Note: there is a limitation with dark on dark text
 ## Images in images
-This feature allows to search an image inside other images, this can be used to find marked documents with special markers or just by some common item.  
-In the result below you will see examples of detection of distorted, skewed and rotated markers, this was all made using an algorithm called [SURF](https://en.wikipedia.org/wiki/Speeded_up_robust_features).
+This feature allows us to search an image inside other images, this can be used to find marked documents with special markers or just by some common item.    
+In the result below you will see examples of detection of distorted, skewed, and rotated markers, this was all made using an algorithm called [SURF](https://en.wikipedia.org/wiki/Speeded_up_robust_features).
 ![A](https://github.com/angelorodem/SuspiciousEyes/blob/master/images/results/result3/detections/a.png)
 ![B](https://github.com/angelorodem/SuspiciousEyes/blob/master/images/results/result3/detections/b.png)
 ![C](https://github.com/angelorodem/SuspiciousEyes/blob/master/images/results/result3/detections/c.png)
